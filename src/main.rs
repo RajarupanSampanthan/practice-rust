@@ -1,9 +1,13 @@
+mod thread_pool;
+
 use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
     thread::{self},
     time::Duration,
 };
+
+use crate::thread_pool::ThreadPool;
 
 fn write_message(stream: &mut TcpStream, buf: &[u8]) {
     if let Err(x) = stream.write(buf) {
@@ -52,6 +56,8 @@ fn main() {
 
     let tcp_listener = tcp_listener.unwrap();
 
+    let thread_pool = ThreadPool::new(4);
+
     for stream in tcp_listener.incoming() {
         if let Err(x) = stream {
             println!("Error while getting stream: {}", x);
@@ -59,6 +65,11 @@ fn main() {
         }
 
         let stream = stream.unwrap();
-        handle_connection(stream);
+
+        let easy_task = move || {
+            handle_connection(stream);
+        };
+
+        thread_pool.execute(Box::new(easy_task));
     }
 }
