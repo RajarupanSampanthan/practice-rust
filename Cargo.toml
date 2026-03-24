@@ -1,2 +1,5 @@
 [workspace]
-members = ["tcp-echo-server"]
+members = [
+    "my-redis",
+    "tcp-echo-server"
+]
